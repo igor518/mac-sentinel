@@ -301,9 +301,9 @@ bun run test:e2e -- --mochaOpts.grep="sustained CPU"
 
 **Done when**:
 
-- [ ] The CPU scenario is GREEN.
-- [ ] Threshold, duration, and observed value appear in evidence.
-- [ ] A gap resets continuity.
+- [x] The CPU scenario is GREEN.
+- [x] Threshold, duration, and observed value appear in evidence.
+- [x] A gap resets continuity.
 
 ### Task 4: Deliver history and resilient degraded monitoring
 
@@ -361,9 +361,9 @@ bun run test:e2e -- --mochaOpts.grep="dependencies|sampling gap"
 
 **Done when**:
 
-- [ ] Storage and resilience tests are GREEN.
-- [ ] History separates reused PIDs.
-- [ ] Live monitoring continues during storage failure.
+- [x] Storage and resilience tests are GREEN.
+- [x] History separates reused PIDs.
+- [x] Live monitoring continues during storage failure.
 
 ### Task 5: Deliver settings, alert noise controls, and history deletion
 

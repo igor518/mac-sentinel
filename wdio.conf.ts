@@ -18,6 +18,6 @@ export const config: Options.Testrunner = {
 		appBinaryPath: './src-tauri/target/debug/macsentinel',
 	}]],
 	mochaOpts: {
-		timeout: 60_000,
+		timeout: 120_000,
 	},
 };

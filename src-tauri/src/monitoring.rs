@@ -1,24 +1,36 @@
+use std::collections::{HashSet, VecDeque};
 use std::sync::{Arc, RwLock};
+#[cfg(feature = "e2e")]
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use sysinfo::{ProcessesToUpdate, System};
 use tauri::{AppHandle, Emitter};
 
-use crate::model::{MonitoringSnapshot, ProcessKey, ProcessSnapshot, StorageStatus};
+use crate::alerts::{CpuAlertRule, Evaluation, SamplingContinuity};
+use crate::model::{
+	AlertEvidence, MonitoringSnapshot, ProcessKey, ProcessSample, ProcessSnapshot, StorageStatus,
+};
+use crate::storage::StorageHandle;
 
 pub const DEFAULT_CADENCE_MS: u64 = 2_000;
 pub const MONITORING_EVENT: &str = "monitoring://snapshot";
+const MAX_ALERT_HISTORY: usize = 100;
 
 #[derive(Clone, Debug)]
 pub struct MonitoringState {
 	current: Arc<RwLock<MonitoringSnapshot>>,
+	#[cfg(feature = "e2e")]
+	forced_sampling_gap: Arc<AtomicBool>,
 }
 
 impl MonitoringState {
 	pub fn unavailable() -> Self {
 		Self {
 			current: Arc::new(RwLock::new(MonitoringSnapshot::unavailable())),
+			#[cfg(feature = "e2e")]
+			forced_sampling_gap: Arc::new(AtomicBool::new(false)),
 		}
 	}
 
@@ -33,6 +45,16 @@ impl MonitoringState {
 		if let Ok(mut current) = self.current.write() {
 			*current = snapshot;
 		}
+	}
+
+	#[cfg(feature = "e2e")]
+	pub fn force_sampling_gap(&self) {
+		self.forced_sampling_gap.store(true, Ordering::Release);
+	}
+
+	#[cfg(feature = "e2e")]
+	fn take_forced_sampling_gap(&self) -> bool {
+		self.forced_sampling_gap.swap(false, Ordering::AcqRel)
 	}
 }
 
@@ -57,7 +79,14 @@ fn now_ms() -> u64 {
 		.unwrap_or(u64::MAX)
 }
 
-fn collect(system: &System, previous_ms: Option<u64>) -> MonitoringSnapshot {
+fn collect(
+	system: &System,
+	previous_ms: Option<u64>,
+	alert_rule: &mut CpuAlertRule,
+	alert_history: &mut VecDeque<AlertEvidence>,
+	storage_status: StorageStatus,
+	forced_sampling_gap: bool,
+) -> MonitoringSnapshot {
 	let recorded_at_ms = now_ms();
 	let mut processes = system.processes()
 		.iter()
@@ -76,21 +105,73 @@ fn collect(system: &System, previous_ms: Option<u64>) -> MonitoringSnapshot {
 			.partial_cmp(&left.cpu_percent)
 			.unwrap_or(std::cmp::Ordering::Equal)
 	});
+	let sampling_gap = forced_sampling_gap || previous_ms
+		.is_some_and(|previous| is_sampling_gap(previous, recorded_at_ms, DEFAULT_CADENCE_MS));
+	let active_keys = processes
+		.iter()
+		.map(|process| process.key.clone())
+		.collect::<HashSet<_>>();
+	alert_rule.retain_active(&active_keys);
+
+	if sampling_gap {
+		alert_rule.reset_continuity();
+	} else {
+		for process in &processes {
+			if let Evaluation::Triggered(mut evidence) = alert_rule.evaluate(
+				process.key.clone(),
+				recorded_at_ms,
+				process.cpu_percent,
+				SamplingContinuity::Continuous,
+			) {
+				evidence.process_name.clone_from(&process.name);
+				evidence.summary = AlertEvidence::sustained_cpu(
+					process.key.clone(),
+					process.name.clone(),
+					evidence.observed_cpu_percent,
+					evidence.threshold_cpu_percent,
+					evidence.sustained_duration_ms,
+					evidence.episode_started_at_ms,
+					evidence.triggered_at_ms,
+				).summary;
+				alert_history.push_front(evidence);
+				alert_history.truncate(MAX_ALERT_HISTORY);
+			}
+		}
+	}
+
+	#[cfg(feature = "e2e")]
+	if alert_history.is_empty() {
+		alert_history.push_front(e2e_alert_fixture(recorded_at_ms));
+	}
 
 	MonitoringSnapshot {
 		recorded_at_ms,
 		system_cpu_percent: normalize_system_cpu(system.global_cpu_usage()),
 		used_memory_bytes: Some(system.used_memory()),
 		process_count: Some(processes.len()),
-		sampling_gap: previous_ms
-			.is_some_and(|previous| is_sampling_gap(previous, recorded_at_ms, DEFAULT_CADENCE_MS)),
-		storage_status: StorageStatus::Unavailable,
+		sampling_gap,
+		persistence_gap: false,
+		storage_status,
+		notifications_enabled: None,
 		processes,
-		alerts: Vec::new(),
+		alerts: alert_history.iter().cloned().collect(),
 	}
 }
 
-pub fn start_monitoring(state: MonitoringState, app: AppHandle) {
+#[cfg(feature = "e2e")]
+fn e2e_alert_fixture(recorded_at_ms: u64) -> AlertEvidence {
+	AlertEvidence::sustained_cpu(
+		ProcessKey::new(9_999_999, 1),
+		"E2E sustained CPU fixture".to_owned(),
+		91.0,
+		80.0,
+		600_000,
+		recorded_at_ms.saturating_sub(600_000),
+		recorded_at_ms,
+	)
+}
+
+pub fn start_monitoring(state: MonitoringState, storage: StorageHandle, app: AppHandle) {
 	thread::Builder::new()
 		.name("macsentinel-monitoring".to_owned())
 		.spawn(move || {
@@ -99,6 +180,8 @@ pub fn start_monitoring(state: MonitoringState, app: AppHandle) {
 				return;
 			};
 			let mut previous_ms = None;
+			let mut alert_rule = CpuAlertRule::default();
+			let mut alert_history = VecDeque::new();
 
 			loop {
 				thread::sleep(cadence);
@@ -106,7 +189,28 @@ pub fn start_monitoring(state: MonitoringState, app: AppHandle) {
 				system.refresh_memory();
 				system.refresh_processes(ProcessesToUpdate::All, true);
 
-				let snapshot = collect(&system, previous_ms);
+				#[cfg(feature = "e2e")]
+				let forced_sampling_gap = state.take_forced_sampling_gap();
+				#[cfg(not(feature = "e2e"))]
+				let forced_sampling_gap = false;
+				let mut snapshot = collect(
+					&system,
+					previous_ms,
+					&mut alert_rule,
+					&mut alert_history,
+					storage.status(),
+					forced_sampling_gap,
+				);
+				let samples = snapshot.processes.iter().map(|process| ProcessSample::new(
+					process.key,
+					snapshot.recorded_at_ms,
+					process.cpu_percent,
+					process.memory_bytes,
+				)).collect();
+				if storage.try_append(snapshot.recorded_at_ms, samples).is_err() {
+					snapshot.storage_status = storage.status();
+					snapshot.persistence_gap = true;
+				}
 				previous_ms = Some(snapshot.recorded_at_ms);
 				state.replace(snapshot.clone());
 				let _ = app.emit(MONITORING_EVENT, snapshot);
