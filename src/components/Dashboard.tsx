@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import type { MonitoringSnapshot } from '../types';
+import type { MacSentinelBridge, MonitoringSnapshot } from '../types';
+import AlertCenter from './AlertCenter';
 import ProcessExplorer from './ProcessExplorer';
 
 interface DashboardProps {
 	snapshot: MonitoringSnapshot;
+	loadHistory: MacSentinelBridge['getProcessHistory'];
 }
 
 function metric(value: number | null, suffix = ''): string {
@@ -18,7 +20,7 @@ function formatMemory(bytes: number | null): string {
 	return bytes === null ? 'Unavailable' : `${(bytes / 1_000_000_000).toFixed(1)} GB`;
 }
 
-export default function Dashboard({ snapshot }: DashboardProps) {
+export default function Dashboard({ snapshot, loadHistory }: DashboardProps) {
 	const [summaryOpen, setSummaryOpen] = useState(false);
 	const topProcesses = snapshot.processes.slice(0, 3);
 
@@ -63,8 +65,21 @@ export default function Dashboard({ snapshot }: DashboardProps) {
 					className="notice"
 					role="status"
 					aria-label="Storage unavailable"
+					data-testid="storage-degraded"
 				>
 					History storage is {snapshot.storageStatus}. Live data remains independent.
+				</div>
+			)}
+
+			{snapshot.notificationsEnabled === false && (
+				<div className="notice" role="status" data-testid="notifications-denied">
+					macOS notifications are disabled. Alerts remain available in MacSentinel.
+				</div>
+			)}
+
+			{snapshot.samplingGap && (
+				<div className="notice" role="status" data-testid="sampling-gap">
+					Sampling resumed after a gap. <span data-testid="alert-continuity-reset">Sustained alert continuity was reset.</span>
 				</div>
 			)}
 
@@ -86,10 +101,11 @@ export default function Dashboard({ snapshot }: DashboardProps) {
 			<p className="semantics" data-testid="cpu-semantics">
 				System CPU spans the whole machine; process CPU may exceed 100% because 100% represents one logical core.
 			</p>
+			<AlertCenter alerts={snapshot.alerts} />
 			{snapshot.processes.length === 0 ? (
 				<p className="empty-state">Waiting for the first live process sample.</p>
 			) : (
-				<ProcessExplorer processes={snapshot.processes} />
+				<ProcessExplorer processes={snapshot.processes} loadHistory={loadHistory} />
 			)}
 		</main>
 	);

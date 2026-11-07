@@ -9,7 +9,9 @@ const snapshot: MonitoringSnapshot = {
 	usedMemoryBytes: 14_200_000_000,
 	processCount: 2,
 	samplingGap: false,
+	persistenceGap: false,
 	storageStatus: 'available',
+	notificationsEnabled: null,
 	processes: [
 		{
 			key: { pid: 101, startedAt: 1_793_999_000 },
@@ -34,11 +36,14 @@ const snapshot: MonitoringSnapshot = {
 function bridge(overrides: Partial<MacSentinelBridge> = {}): MacSentinelBridge {
 	return {
 		getCurrentSnapshot: vi.fn().mockResolvedValue(snapshot),
+		getProcessHistory: vi.fn().mockResolvedValue([]),
 		subscribe: vi.fn().mockReturnValue(() => undefined),
 		getSettings: vi.fn().mockResolvedValue({}),
 		saveSettings: vi.fn().mockResolvedValue({}),
 		deleteHistory: vi.fn().mockResolvedValue(undefined),
 		requestTermination: vi.fn().mockResolvedValue({ status: 'cancelled' }),
+		simulateStorageFailure: vi.fn().mockResolvedValue(undefined),
+		simulateSamplingGap: vi.fn().mockResolvedValue(undefined),
 		...overrides,
 	};
 }
@@ -100,6 +105,25 @@ describe('MacSentinel application shell', () => {
 		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 	});
 
+	it('loads retained history for the complete process identity', async () => {
+		const getProcessHistory = vi.fn().mockResolvedValue([{
+			key: snapshot.processes[0].key,
+			recordedAtMs: snapshot.recordedAtMs,
+			cpuPercent: 88.4,
+			memoryBytes: 2_000_000_000,
+		}]);
+		render(<App bridge={bridge({ getProcessHistory })} />);
+		await screen.findByText('Google Chrome');
+
+		fireEvent.click(screen.getByText('Google Chrome'));
+		expect(await screen.findByText(/1 retained sample.*Latest CPU 88%/i)).toBeInTheDocument();
+		expect(getProcessHistory).toHaveBeenCalledWith(
+			snapshot.processes[0].key,
+			expect.any(Number),
+			expect.any(Number),
+		);
+	});
+
 	it('keeps live monitoring visible when storage is degraded', async () => {
 		render(<App bridge={bridge({
 			getCurrentSnapshot: vi.fn().mockResolvedValue({
@@ -110,5 +134,30 @@ describe('MacSentinel application shell', () => {
 
 		expect(await screen.findByRole('status', { name: /storage unavailable/i })).toBeInTheDocument();
 		expect(screen.getByText('28%')).toBeInTheDocument();
+	});
+
+	it('shows the evidence behind a sustained CPU alert', async () => {
+		render(<App bridge={bridge({
+			getCurrentSnapshot: vi.fn().mockResolvedValue({
+				...snapshot,
+				alerts: [{
+					id: 'cpu:101:1793999000:1794000000000',
+					processKey: { pid: 101, startedAt: 1_793_999_000 },
+					processName: 'Google Chrome',
+					observedCpuPercent: 91,
+					thresholdCpuPercent: 80,
+					sustainedDurationMs: 600_000,
+					episodeStartedAtMs: 1_793_999_400_000,
+					triggeredAtMs: 1_794_000_000_000,
+					title: 'Sustained CPU usage',
+					summary: 'Google Chrome reached 91% CPU against an 80% threshold for a 10 minute duration.',
+				}],
+			}),
+		})} />);
+
+		const alertCenter = await screen.findByTestId('alert-center');
+		expect(within(alertCenter).getByTestId('alert-evidence')).toHaveTextContent('Google Chrome');
+		expect(within(alertCenter).getByTestId('alert-evidence')).toHaveTextContent('80% threshold');
+		expect(within(alertCenter).getByTestId('alert-evidence')).toHaveTextContent('10 minute duration');
 	});
 });

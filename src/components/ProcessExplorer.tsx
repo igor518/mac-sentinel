@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ProcessSnapshot } from '../types';
+import type { ProcessKey, ProcessSample, ProcessSnapshot } from '../types';
 
 interface ProcessExplorerProps {
 	processes: ProcessSnapshot[];
+	loadHistory: (key: ProcessKey, fromMs: number, toMs: number) => Promise<ProcessSample[]>;
 }
 
 type SortKey = 'cpu' | 'memory' | 'name' | 'pid';
@@ -33,11 +34,17 @@ function compareProcesses(left: ProcessSnapshot, right: ProcessSnapshot, sort: S
 	}
 }
 
-export default function ProcessExplorer({ processes }: ProcessExplorerProps) {
+type HistoryState =
+	| { status: 'idle' | 'loading' }
+	| { status: 'ready'; samples: ProcessSample[] }
+	| { status: 'unavailable' };
+
+export default function ProcessExplorer({ processes, loadHistory }: ProcessExplorerProps) {
 	const [query, setQuery] = useState('');
 	const [sort, setSort] = useState<SortKey>('cpu');
 	const [selected, setSelected] = useState<ProcessSnapshot | null>(null);
 	const closeButtonRef = useRef<HTMLButtonElement>(null);
+	const [history, setHistory] = useState<HistoryState>({ status: 'idle' });
 
 	useEffect(() => {
 		if (!selected) {
@@ -67,6 +74,32 @@ export default function ProcessExplorer({ processes }: ProcessExplorerProps) {
 			previouslyFocused?.focus();
 		};
 	}, [selected]);
+
+	useEffect(() => {
+		if (!selected) {
+			setHistory({ status: 'idle' });
+			return undefined;
+		}
+
+		let active = true;
+		const toMs = Date.now();
+		setHistory({ status: 'loading' });
+		void loadHistory(selected.key, toMs - 15 * 60 * 1_000, toMs)
+			.then((samples) => {
+				if (active) {
+					setHistory({ status: 'ready', samples });
+				}
+			})
+			.catch(() => {
+				if (active) {
+					setHistory({ status: 'unavailable' });
+				}
+			});
+
+		return () => {
+			active = false;
+		};
+	}, [loadHistory, selected]);
 	const visible = useMemo(() => {
 		const normalized = query.trim().toLocaleLowerCase();
 
@@ -181,7 +214,15 @@ export default function ProcessExplorer({ processes }: ProcessExplorerProps) {
 							<div><dt>Memory</dt><dd>{formatBytes(selected.memoryBytes)}</dd></div>
 							<div className="detail-path"><dt>Executable</dt><dd>{selected.executablePath ?? 'Unavailable'}</dd></div>
 						</dl>
-						<p className="history-note">Recent history becomes available when local retention is enabled.</p>
+						<div className="history-note" data-testid="process-history">
+							<strong>Recent history</strong>
+							{history.status === 'loading' && <p>Loading retained samples…</p>}
+							{history.status === 'unavailable' && <p>History is unavailable. Live process data remains available.</p>}
+							{history.status === 'ready' && history.samples.length === 0 && <p>No retained samples in the last 15 minutes.</p>}
+							{history.status === 'ready' && history.samples.length > 0 && (
+								<p>{history.samples.length} retained samples · Latest CPU {formatCpu(history.samples.at(-1)?.cpuPercent ?? null)} · Latest memory {formatBytes(history.samples.at(-1)?.memoryBytes ?? null)}</p>
+							)}
+						</div>
 					</section>
 				</div>
 			)}

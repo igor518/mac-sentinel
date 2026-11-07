@@ -8,7 +8,7 @@
 		"build": "tsc --noEmit && vite build",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:e2e:build": "tauri build --debug --no-bundle --features e2e --config src-tauri/tauri.e2e.conf.json",
+		"test:e2e:build": "VITE_E2E_FIXTURES=true tauri build --debug --no-bundle --features e2e --config src-tauri/tauri.e2e.conf.json",
 		"test:e2e": "bun run test:e2e:build && wdio run ./wdio.conf.ts",
 		"tauri": "tauri"
 	},
