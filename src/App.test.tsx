@@ -1,0 +1,114 @@
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
+import App from './App';
+import type { MacSentinelBridge, MonitoringSnapshot } from './types';
+
+const snapshot: MonitoringSnapshot = {
+	recordedAtMs: 1_794_000_000_000,
+	systemCpuPercent: 28,
+	usedMemoryBytes: 14_200_000_000,
+	processCount: 2,
+	samplingGap: false,
+	storageStatus: 'available',
+	processes: [
+		{
+			key: { pid: 101, startedAt: 1_793_999_000 },
+			name: 'Google Chrome',
+			executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+			parentPid: 1,
+			cpuPercent: 141,
+			memoryBytes: 2_100_000_000,
+		},
+		{
+			key: { pid: 202, startedAt: 1_793_999_500 },
+			name: 'restricted-process',
+			executablePath: null,
+			parentPid: null,
+			cpuPercent: null,
+			memoryBytes: 650_000_000,
+		},
+	],
+	alerts: [],
+};
+
+function bridge(overrides: Partial<MacSentinelBridge> = {}): MacSentinelBridge {
+	return {
+		getCurrentSnapshot: vi.fn().mockResolvedValue(snapshot),
+		subscribe: vi.fn().mockReturnValue(() => undefined),
+		getSettings: vi.fn().mockResolvedValue({}),
+		saveSettings: vi.fn().mockResolvedValue({}),
+		deleteHistory: vi.fn().mockResolvedValue(undefined),
+		requestTermination: vi.fn().mockResolvedValue({ status: 'cancelled' }),
+		...overrides,
+	};
+}
+
+describe('MacSentinel application shell', () => {
+	it('shows current metrics and explains CPU normalization', async () => {
+		render(<App bridge={bridge()} />);
+
+		expect(await screen.findByText('28%')).toBeInTheDocument();
+		expect(screen.getByText('14.2 GB')).toBeInTheDocument();
+		expect(screen.getByText('2', { selector: '[data-testid="process-count"]' })).toBeInTheDocument();
+		expect(screen.getByText(/process CPU may exceed 100%/i)).toBeInTheDocument();
+	});
+
+	it('rounds fractional CPU values to the nearest whole percent', async () => {
+		render(<App bridge={bridge({
+			getCurrentSnapshot: vi.fn().mockResolvedValue({
+				...snapshot,
+				systemCpuPercent: 19.426672,
+			}),
+		})} />);
+
+		expect(await screen.findByText('19%')).toBeInTheDocument();
+		expect(screen.queryByText('19.426672%')).not.toBeInTheDocument();
+	});
+
+	it('searches processes and represents inaccessible values as unavailable', async () => {
+		render(<App bridge={bridge()} />);
+		await screen.findByText('Google Chrome');
+
+		fireEvent.change(screen.getByRole('searchbox', { name: /processes/i }), {
+			target: { value: 'restricted' },
+		});
+
+		const table = screen.getByRole('table', { name: /processes/i });
+		expect(within(table).queryByText('Google Chrome')).not.toBeInTheDocument();
+		expect(within(table).getByText('restricted-process')).toBeInTheDocument();
+		expect(within(table).getAllByText('Unavailable').length).toBeGreaterThan(0);
+	});
+
+	it('opens process details in a modal and supports every dismissal path', async () => {
+		render(<App bridge={bridge()} />);
+		await screen.findByText('Google Chrome');
+
+		fireEvent.click(screen.getByText('Google Chrome'));
+		let dialog = screen.getByRole('dialog', { name: /google chrome/i });
+		expect(within(dialog).getByText('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')).toBeInTheDocument();
+
+		fireEvent.keyDown(document, { key: 'Escape' });
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByText('Google Chrome'));
+		fireEvent.mouseDown(screen.getByTestId('process-detail-backdrop'));
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByText('Google Chrome'));
+		dialog = screen.getByRole('dialog', { name: /google chrome/i });
+		fireEvent.click(within(dialog).getByRole('button', { name: /close/i }));
+		expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+	});
+
+	it('keeps live monitoring visible when storage is degraded', async () => {
+		render(<App bridge={bridge({
+			getCurrentSnapshot: vi.fn().mockResolvedValue({
+				...snapshot,
+				storageStatus: 'degraded',
+			}),
+		})} />);
+
+		expect(await screen.findByRole('status', { name: /storage unavailable/i })).toBeInTheDocument();
+		expect(screen.getByText('28%')).toBeInTheDocument();
+	});
+});

@@ -1,0 +1,1371 @@
+{
+  "version": 1,
+  "ticket": {
+    "key": "MCS-001"
+  },
+  "requirements": [
+    {
+      "id": "BR-1.1",
+      "kind": "behavior",
+      "text": "WHEN the user opens MacSentinel, the system shall show current total-system CPU utilization, used memory, active-process count, and ranked processes from the most recent completed sample.",
+      "sourceRef": "MCS-001 §4 Functional",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-1.2",
+      "kind": "behavior",
+      "text": "WHEN the user opens the menu-bar popover, the system shall show CPU, memory, process count, the top three CPU-consuming processes, active alerts, and controls to open the dashboard or settings.",
+      "sourceRef": "MCS-001 concept §MVP Journeys",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-2.1",
+      "kind": "behavior",
+      "text": "WHEN the user searches or sorts the process explorer, the system shall filter by process name or PID and sort by name, PID, process CPU, or resident memory.",
+      "sourceRef": "MCS-001 §4 Functional",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-2.2",
+      "kind": "behavior",
+      "text": "WHEN the user selects a process, the system shall show its available name, PID, executable path, start time, parent PID, current metrics, and recent CPU and memory history.",
+      "sourceRef": "MCS-001 §2 Success Conditions",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-3.1",
+      "kind": "behavior",
+      "text": "WHEN samples contain the same PID with different process start times, the system shall keep their identities and histories separate.",
+      "sourceRef": "MCS-001 §4 Functional",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-3.2",
+      "kind": "behavior",
+      "text": "IF a process exits or becomes inaccessible between collection and display, THEN the system shall mark the data unavailable or ended without fabricating a zero measurement.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-4.1",
+      "kind": "behavior",
+      "text": "WHEN a process meets the configured CPU threshold for the configured sustained duration, the system shall create one alert stating the process identity, observed CPU value, threshold, and duration.",
+      "sourceRef": "MCS-001 §4 Functional",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-4.2",
+      "kind": "behavior",
+      "text": "WHEN an alert is dismissed, allowed, or inside its cooldown, the system shall preserve the recorded alert event and suppress repeat notifications according to the active settings.",
+      "sourceRef": "MCS-001 §4 Functional",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-4.3",
+      "kind": "behavior",
+      "text": "WHEN an experimentally validated memory-growth rule meets its configured conditions, the system shall create an alert that identifies the observed memory change and evaluation window without claiming a root cause.",
+      "sourceRef": "MCS-001 Approved Product Decisions",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-5.1",
+      "kind": "behavior",
+      "text": "WHEN the user changes sampling, alert, retention, notification, startup, cooldown, allowlist, or privacy settings, the system shall validate and apply the saved values to subsequent monitoring behavior.",
+      "sourceRef": "MCS-001 §2 Success Conditions",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-5.2",
+      "kind": "behavior",
+      "text": "WHEN the user requests history deletion and confirms it, the system shall remove retained samples, aggregates, and alert events while continuing live monitoring.",
+      "sourceRef": "MCS-001 §4 Functional",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-6.1",
+      "kind": "behavior",
+      "text": "WHEN the user requests termination of an eligible process and confirms the current process identity, the system shall send the safe default termination signal and report success, refusal, disappearance, identity change, or permission failure.",
+      "sourceRef": "MCS-001 §4 Functional",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-6.2",
+      "kind": "behavior",
+      "text": "IF the user cancels termination or the process identity no longer matches, THEN the system shall not send a termination signal.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-7.1",
+      "kind": "behavior",
+      "text": "WHILE local history storage is unavailable, the system shall continue read-only live monitoring and show that persistence and historical views are unavailable.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-7.2",
+      "kind": "behavior",
+      "text": "WHILE macOS notifications are denied, the system shall retain in-app alert visibility and show that system notifications are disabled.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-7.3",
+      "kind": "behavior",
+      "text": "WHEN sampling resumes after sleep, wake, suspension, or excessive delay, the system shall record a gap and shall not treat the missed interval as continuous evidence for an alert.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-8.1",
+      "kind": "behavior",
+      "text": "WHEN metric semantics are displayed, the system shall explain that total-system CPU uses all-core normalization and process CPU uses one-logical-core normalization and may exceed 100 percent.",
+      "sourceRef": "MCS-001 §2 Constraints",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "BR-8.2",
+      "kind": "behavior",
+      "text": "WHEN status is communicated visually, the system shall provide text or icon meaning, keyboard operation, visible focus, and VoiceOver labels rather than relying on color alone.",
+      "sourceRef": "MCS-001 §4 Non-Functional",
+      "routePolicy": "bdd",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C1",
+      "kind": "constraint",
+      "text": "The system shall perform core monitoring on macOS 14 or later Apple Silicon without administrator privileges, kernel extensions, or reduced system protections.",
+      "sourceRef": "MCS-001 §2 Constraints",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C2",
+      "kind": "constraint",
+      "text": "The system shall keep process names, paths, samples, settings, and alerts on the device and shall make no monitoring-data network request during normal operation.",
+      "sourceRef": "MCS-001 §2 Constraints",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C3",
+      "kind": "constraint",
+      "text": "The system shall default to a 2-second sampling interval and allow only validated positive sampling intervals supported by the settings contract.",
+      "sourceRef": "MCS-001 §2 Constraints",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C4",
+      "kind": "constraint",
+      "text": "The system shall normalize total-system CPU to 0 through 100 percent across all logical cores and process CPU to 100 percent per logical core across every view, alert, and stored sample.",
+      "sourceRef": "MCS-001 §2 Constraints",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C5",
+      "kind": "constraint",
+      "text": "The system shall default to 24 hours of raw samples and 7 days of aggregates and shall prune data beyond the active retention settings.",
+      "sourceRef": "MCS-001 §2 Constraints",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C6",
+      "kind": "constraint",
+      "text": "The system shall demonstrate less than 1 percent idle CPU and less than 100 MB resident memory at the default cadence on MacBook Pro Mac16,7 with Apple M4 Pro and 48 GB RAM.",
+      "sourceRef": "MCS-001 Approved Product Decisions",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C7",
+      "kind": "constraint",
+      "text": "The system shall identify a process by the pair of PID and process start time for collection, history, alerting, selection, and termination.",
+      "sourceRef": "MCS-001 §1 Scope",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C8",
+      "kind": "constraint",
+      "text": "The system shall bound in-memory queues and persisted history so delayed consumers and database failures cannot cause unbounded growth.",
+      "sourceRef": "MCS-001 concept §Technical Direction",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C9",
+      "kind": "constraint",
+      "text": "The system shall use the approved near-black visual system with green system metrics, blue process indicators, orange warnings, and non-color status cues.",
+      "sourceRef": "MCS-001 §2 Constraints",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "C10",
+      "kind": "constraint",
+      "text": "The system shall use bundle identifier com.macsentinel.app and include the Apache License 2.0 license text in the repository and distributed application notices.",
+      "sourceRef": "MCS-001 Approved Product Decisions",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "Edge-1",
+      "kind": "edge_case",
+      "text": "IF a process disappears during sampling, THEN the system shall complete the sample cycle without crashing and shall not reuse its measurements for another identity.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "Edge-2",
+      "kind": "edge_case",
+      "text": "IF process metadata is denied or unavailable, THEN the system shall preserve available metrics and represent each unavailable field explicitly.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "Edge-3",
+      "kind": "edge_case",
+      "text": "IF the history database is locked, corrupt, or unavailable, THEN the system shall isolate the storage failure from live collection and expose a recoverable error state.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "Edge-4",
+      "kind": "edge_case",
+      "text": "IF a sample interval exceeds twice the configured cadence, THEN the system shall mark a sampling gap and reset sustained-alert continuity.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    },
+    {
+      "id": "Edge-5",
+      "kind": "edge_case",
+      "text": "IF a termination target exits or changes start time before signal delivery, THEN the system shall abort termination and report that the original identity is no longer active.",
+      "sourceRef": "MCS-001 §4 Edge Cases",
+      "routePolicy": "tests",
+      "tags": [
+        "timing:in-ticket"
+      ]
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "dashboard_shows_current_evidence",
+      "title": "Dashboard shows current system evidence",
+      "covers": [
+        "BR-1.1",
+        "BR-8.1",
+        "BR-8.2"
+      ],
+      "given": "Given MacSentinel has completed a valid sample",
+      "when": "When the user opens the dashboard",
+      "then": "Then current system metrics and ranked processes are shown with explained CPU semantics, accessible labels, and non-color status cues",
+      "sourceRef": "requirements.trace.md BR-1 and BR-8"
+    },
+    {
+      "id": "popover_summarizes_monitoring",
+      "title": "Menu-bar popover summarizes monitoring",
+      "covers": [
+        "BR-1.2"
+      ],
+      "given": "Given MacSentinel has current metrics and may have active alerts",
+      "when": "When the user opens the menu-bar popover",
+      "then": "Then the popover shows CPU, memory, process count, the top three CPU processes, active alerts, and dashboard and settings controls",
+      "sourceRef": "requirements.trace.md BR-1.2"
+    },
+    {
+      "id": "processes_can_be_found_and_inspected",
+      "title": "Processes can be found and inspected",
+      "covers": [
+        "BR-2.1",
+        "BR-2.2"
+      ],
+      "given": "Given the process explorer contains sampled processes",
+      "when": "When the user searches, sorts, and selects a process",
+      "then": "Then matching processes are ordered by the chosen field and the selected process shows all available metadata and recent trends",
+      "sourceRef": "requirements.trace.md BR-2"
+    },
+    {
+      "id": "process_identity_survives_lifecycle_changes",
+      "title": "Process identity survives lifecycle changes",
+      "covers": [
+        "BR-3.1",
+        "BR-3.2"
+      ],
+      "given": "Given one PID is observed with different start times or disappears between samples",
+      "when": "When the next completed sample is displayed",
+      "then": "Then histories remain separated and ended or unavailable data is shown without a fabricated zero",
+      "sourceRef": "requirements.trace.md BR-3"
+    },
+    {
+      "id": "sustained_cpu_creates_evidence_alert",
+      "title": "Sustained CPU creates one evidence alert",
+      "covers": [
+        "BR-4.1"
+      ],
+      "given": "Given a process remains at or above the configured CPU threshold for the configured continuous duration",
+      "when": "When the sustained duration completes",
+      "then": "Then one alert identifies the process, observed CPU value, threshold, and duration",
+      "sourceRef": "requirements.trace.md BR-4.1"
+    },
+    {
+      "id": "alert_controls_prevent_noise",
+      "title": "Alert controls prevent repeated noise",
+      "covers": [
+        "BR-4.2"
+      ],
+      "given": "Given an alert exists for a process",
+      "when": "When the user dismisses it, allowlists the process, or the cooldown remains active",
+      "then": "Then the event stays in history and repeat notifications are suppressed according to settings",
+      "sourceRef": "requirements.trace.md BR-4.2"
+    },
+    {
+      "id": "memory_growth_reports_observation",
+      "title": "Memory growth reports an observation",
+      "covers": [
+        "BR-4.3"
+      ],
+      "given": "Given the validated memory-growth rule is configured and its conditions are met",
+      "when": "When the rule evaluates the completed observation window",
+      "then": "Then one alert states the observed memory change and window without claiming a root cause",
+      "sourceRef": "requirements.trace.md BR-4.3"
+    },
+    {
+      "id": "settings_and_deletion_change_future_behavior",
+      "title": "Settings and deletion change future behavior",
+      "covers": [
+        "BR-5.1",
+        "BR-5.2"
+      ],
+      "given": "Given local settings and retained monitoring history exist",
+      "when": "When the user saves valid settings and separately confirms history deletion",
+      "then": "Then subsequent monitoring uses the saved settings and retained samples, aggregates, and alert events are removed while live monitoring continues",
+      "sourceRef": "requirements.trace.md BR-5"
+    },
+    {
+      "id": "confirmed_termination_reports_outcome",
+      "title": "Confirmed termination reports an outcome",
+      "covers": [
+        "BR-6.1"
+      ],
+      "given": "Given an eligible user-owned process still matches its sampled identity",
+      "when": "When the user requests and confirms termination",
+      "then": "Then the safe default signal is sent and the resulting success, refusal, disappearance, identity change, or permission failure is reported",
+      "sourceRef": "requirements.trace.md BR-6.1"
+    },
+    {
+      "id": "unsafe_termination_is_prevented",
+      "title": "Unsafe termination is prevented",
+      "covers": [
+        "BR-6.2"
+      ],
+      "given": "Given a termination confirmation is open",
+      "when": "When the user cancels or the process identity changes before delivery",
+      "then": "Then no termination signal is sent",
+      "sourceRef": "requirements.trace.md BR-6.2"
+    },
+    {
+      "id": "dependency_denial_keeps_alerts_visible",
+      "title": "Dependency denial keeps core monitoring visible",
+      "covers": [
+        "BR-7.1",
+        "BR-7.2"
+      ],
+      "given": "Given local storage is unavailable or macOS notification permission is denied",
+      "when": "When monitoring and alert evaluation continue",
+      "then": "Then live read-only metrics and in-app alerts remain available with the unavailable capability clearly identified",
+      "sourceRef": "requirements.trace.md BR-7.1 and BR-7.2"
+    },
+    {
+      "id": "sampling_gap_resets_alert_continuity",
+      "title": "Sampling gap resets alert continuity",
+      "covers": [
+        "BR-7.3"
+      ],
+      "given": "Given a sample arrives after sleep, wake, suspension, or more than twice the configured cadence",
+      "when": "When the monitoring timeline resumes",
+      "then": "Then the gap is recorded and pre-gap observations do not count toward a continuous sustained alert",
+      "sourceRef": "requirements.trace.md BR-7.3"
+    }
+  ],
+  "obligations": [
+    {
+      "id": "OBL-bootstrap",
+      "title": "Boot a least-privilege macOS Tauri application",
+      "derivedFrom": [
+        "C1",
+        "C10"
+      ],
+      "artifactIds": [
+        "ART-package-json",
+        "ART-tsconfig",
+        "ART-vite-config",
+        "ART-index-html",
+        "ART-tauri-cargo",
+        "ART-tauri-build",
+        "ART-tauri-config",
+        "ART-tauri-capability",
+        "ART-rust-main",
+        "ART-rust-lib"
+      ],
+      "sourceRef": "architecture.md#bootstrap-and-tooling"
+    },
+    {
+      "id": "OBL-monitoring-owner",
+      "title": "Own sampling, normalization, identity, and process lifecycle in Rust",
+      "derivedFrom": [
+        "BR-1.1",
+        "BR-1.2",
+        "BR-2.1",
+        "BR-2.2",
+        "BR-3.1",
+        "BR-3.2",
+        "C3",
+        "C4",
+        "C7",
+        "Edge-1",
+        "Edge-2",
+        "Edge-4"
+      ],
+      "artifactIds": [
+        "ART-rust-model",
+        "ART-rust-monitoring",
+        "ART-rust-platform-mod",
+        "ART-rust-platform-macos",
+        "ART-rust-test-monitoring",
+        "ART-metric-doc"
+      ],
+      "sourceRef": "architecture.md#monitoring-owner"
+    },
+    {
+      "id": "OBL-bridge-contract",
+      "title": "Expose typed snapshots and explicit commands across one Tauri boundary",
+      "derivedFrom": [
+        "BR-1.1",
+        "BR-1.2",
+        "BR-2.2",
+        "BR-5.1",
+        "BR-5.2",
+        "BR-6.1",
+        "BR-6.2",
+        "BR-7.1",
+        "BR-7.2",
+        "BR-8.1"
+      ],
+      "artifactIds": [
+        "ART-rust-commands",
+        "ART-frontend-types",
+        "ART-frontend-bridge",
+        "ART-frontend-monitoring-hook"
+      ],
+      "sourceRef": "architecture.md#bridge-boundary"
+    },
+    {
+      "id": "OBL-alert-owner",
+      "title": "Evaluate evidence-based CPU and memory alerts with continuity rules",
+      "derivedFrom": [
+        "BR-4.1",
+        "BR-4.2",
+        "BR-4.3",
+        "BR-7.2",
+        "BR-7.3",
+        "C3",
+        "C4",
+        "C8",
+        "Edge-4"
+      ],
+      "artifactIds": [
+        "ART-rust-alerts",
+        "ART-rust-test-alerts",
+        "ART-frontend-alerts"
+      ],
+      "sourceRef": "architecture.md#alert-owner"
+    },
+    {
+      "id": "OBL-storage-owner",
+      "title": "Persist and prune bounded history while isolating storage failures",
+      "derivedFrom": [
+        "BR-2.2",
+        "BR-5.2",
+        "BR-7.1",
+        "C5",
+        "C8",
+        "Edge-3"
+      ],
+      "artifactIds": [
+        "ART-rust-storage",
+        "ART-rust-test-storage"
+      ],
+      "sourceRef": "architecture.md#storage-owner"
+    },
+    {
+      "id": "OBL-settings-owner",
+      "title": "Validate and persist settings that govern subsequent monitoring",
+      "derivedFrom": [
+        "BR-4.2",
+        "BR-5.1",
+        "BR-7.2",
+        "C3",
+        "C5"
+      ],
+      "artifactIds": [
+        "ART-rust-settings",
+        "ART-rust-test-settings-actions",
+        "ART-frontend-settings"
+      ],
+      "sourceRef": "architecture.md#settings-owner"
+    },
+    {
+      "id": "OBL-termination-owner",
+      "title": "Revalidate process identity before confirmation-gated termination",
+      "derivedFrom": [
+        "BR-6.1",
+        "BR-6.2",
+        "C1",
+        "C7",
+        "Edge-5"
+      ],
+      "artifactIds": [
+        "ART-rust-termination",
+        "ART-rust-test-settings-actions",
+        "ART-rust-platform-macos"
+      ],
+      "sourceRef": "architecture.md#termination-owner"
+    },
+    {
+      "id": "OBL-presentation",
+      "title": "Render the approved accessible dashboard, popover content, process explorer, alerts, and settings",
+      "derivedFrom": [
+        "BR-1.1",
+        "BR-1.2",
+        "BR-2.1",
+        "BR-2.2",
+        "BR-4.2",
+        "BR-5.1",
+        "BR-5.2",
+        "BR-6.1",
+        "BR-6.2",
+        "BR-7.1",
+        "BR-7.2",
+        "BR-8.1",
+        "BR-8.2",
+        "C9"
+      ],
+      "artifactIds": [
+        "ART-frontend-main",
+        "ART-frontend-app",
+        "ART-frontend-dashboard",
+        "ART-frontend-processes",
+        "ART-frontend-alerts",
+        "ART-frontend-settings",
+        "ART-frontend-styles",
+        "ART-frontend-test-setup",
+        "ART-frontend-test-app"
+      ],
+      "sourceRef": "architecture.md#presentation-boundary"
+    },
+    {
+      "id": "OBL-e2e-verification",
+      "title": "Exercise integrated user journeys on macOS with WebdriverIO Tauri service",
+      "derivedFrom": [
+        "BR-1.1",
+        "BR-1.2",
+        "BR-2.1",
+        "BR-2.2",
+        "BR-3.1",
+        "BR-3.2",
+        "BR-4.1",
+        "BR-4.2",
+        "BR-4.3",
+        "BR-5.1",
+        "BR-5.2",
+        "BR-6.1",
+        "BR-6.2",
+        "BR-7.1",
+        "BR-7.2",
+        "BR-7.3",
+        "BR-8.1",
+        "BR-8.2"
+      ],
+      "artifactIds": [
+        "ART-wdio-config",
+        "ART-e2e-spec"
+      ],
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "OBL-license-docs",
+      "title": "Document operation, metric semantics, privacy, limitations, and Apache licensing",
+      "derivedFrom": [
+        "C2",
+        "C4",
+        "C6",
+        "C10"
+      ],
+      "artifactIds": [
+        "ART-license",
+        "ART-readme",
+        "ART-metric-doc",
+        "ART-performance-doc"
+      ],
+      "sourceRef": "architecture.md#licensing-and-documentation"
+    },
+    {
+      "id": "OBL-performance-privacy",
+      "title": "Prove local-only behavior and reference-Mac resource budgets",
+      "derivedFrom": [
+        "C2",
+        "C6"
+      ],
+      "artifactIds": [
+        "ART-performance-doc",
+        "ART-rust-test-monitoring",
+        "ART-rust-test-performance",
+        "ART-rust-test-security"
+      ],
+      "sourceRef": "architecture.md#verification-boundary"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "ART-package-json",
+      "path": "package.json",
+      "kind": "config",
+      "sourceRef": "architecture.md#bootstrap-and-tooling"
+    },
+    {
+      "id": "ART-tsconfig",
+      "path": "tsconfig.json",
+      "kind": "config",
+      "sourceRef": "architecture.md#bootstrap-and-tooling"
+    },
+    {
+      "id": "ART-vite-config",
+      "path": "vite.config.ts",
+      "kind": "config",
+      "sourceRef": "architecture.md#bootstrap-and-tooling"
+    },
+    {
+      "id": "ART-index-html",
+      "path": "index.html",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#bootstrap-and-tooling"
+    },
+    {
+      "id": "ART-wdio-config",
+      "path": "wdio.conf.ts",
+      "kind": "config",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-license",
+      "path": "LICENSE",
+      "kind": "doc",
+      "sourceRef": "architecture.md#licensing-and-documentation"
+    },
+    {
+      "id": "ART-readme",
+      "path": "README.md",
+      "kind": "doc",
+      "sourceRef": "architecture.md#licensing-and-documentation"
+    },
+    {
+      "id": "ART-metric-doc",
+      "path": "docs/metric-semantics.md",
+      "kind": "doc",
+      "sourceRef": "architecture.md#licensing-and-documentation"
+    },
+    {
+      "id": "ART-performance-doc",
+      "path": "docs/performance.md",
+      "kind": "doc",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-tauri-cargo",
+      "path": "src-tauri/Cargo.toml",
+      "kind": "config",
+      "sourceRef": "architecture.md#bootstrap-and-tooling"
+    },
+    {
+      "id": "ART-tauri-build",
+      "path": "src-tauri/build.rs",
+      "kind": "config",
+      "sourceRef": "architecture.md#bootstrap-and-tooling"
+    },
+    {
+      "id": "ART-tauri-config",
+      "path": "src-tauri/tauri.conf.json",
+      "kind": "config",
+      "sourceRef": "architecture.md#bootstrap-and-tooling"
+    },
+    {
+      "id": "ART-tauri-capability",
+      "path": "src-tauri/capabilities/default.json",
+      "kind": "config",
+      "sourceRef": "architecture.md#security-boundary"
+    },
+    {
+      "id": "ART-rust-main",
+      "path": "src-tauri/src/main.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#bootstrap-and-tooling"
+    },
+    {
+      "id": "ART-rust-lib",
+      "path": "src-tauri/src/lib.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#runtime-flow"
+    },
+    {
+      "id": "ART-rust-model",
+      "path": "src-tauri/src/model.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#domain-model"
+    },
+    {
+      "id": "ART-rust-commands",
+      "path": "src-tauri/src/commands.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#bridge-boundary"
+    },
+    {
+      "id": "ART-rust-monitoring",
+      "path": "src-tauri/src/monitoring.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#monitoring-owner"
+    },
+    {
+      "id": "ART-rust-alerts",
+      "path": "src-tauri/src/alerts.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#alert-owner"
+    },
+    {
+      "id": "ART-rust-storage",
+      "path": "src-tauri/src/storage.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#storage-owner"
+    },
+    {
+      "id": "ART-rust-settings",
+      "path": "src-tauri/src/settings.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#settings-owner"
+    },
+    {
+      "id": "ART-rust-termination",
+      "path": "src-tauri/src/termination.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#termination-owner"
+    },
+    {
+      "id": "ART-rust-platform-mod",
+      "path": "src-tauri/src/platform/mod.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#platform-boundary"
+    },
+    {
+      "id": "ART-rust-platform-macos",
+      "path": "src-tauri/src/platform/macos.rs",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#platform-boundary"
+    },
+    {
+      "id": "ART-rust-test-monitoring",
+      "path": "src-tauri/tests/monitoring.rs",
+      "kind": "test",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-rust-test-alerts",
+      "path": "src-tauri/tests/alerts.rs",
+      "kind": "test",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-rust-test-storage",
+      "path": "src-tauri/tests/storage.rs",
+      "kind": "test",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-rust-test-settings-actions",
+      "path": "src-tauri/tests/settings_actions.rs",
+      "kind": "test",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-frontend-main",
+      "path": "src/main.tsx",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#frontend-shell"
+    },
+    {
+      "id": "ART-frontend-app",
+      "path": "src/App.tsx",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#frontend-shell"
+    },
+    {
+      "id": "ART-frontend-types",
+      "path": "src/types.ts",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#bridge-boundary"
+    },
+    {
+      "id": "ART-frontend-bridge",
+      "path": "src/bridge.ts",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#bridge-boundary"
+    },
+    {
+      "id": "ART-frontend-monitoring-hook",
+      "path": "src/useMonitoring.ts",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#bridge-boundary"
+    },
+    {
+      "id": "ART-frontend-dashboard",
+      "path": "src/components/Dashboard.tsx",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#presentation-boundary"
+    },
+    {
+      "id": "ART-frontend-processes",
+      "path": "src/components/ProcessExplorer.tsx",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#presentation-boundary"
+    },
+    {
+      "id": "ART-frontend-alerts",
+      "path": "src/components/AlertCenter.tsx",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#presentation-boundary"
+    },
+    {
+      "id": "ART-frontend-settings",
+      "path": "src/components/SettingsView.tsx",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#presentation-boundary"
+    },
+    {
+      "id": "ART-frontend-styles",
+      "path": "src/styles.css",
+      "kind": "runtime",
+      "sourceRef": "architecture.md#visual-system"
+    },
+    {
+      "id": "ART-frontend-test-setup",
+      "path": "src/test/setup.ts",
+      "kind": "test",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-frontend-test-app",
+      "path": "src/App.test.tsx",
+      "kind": "test",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-e2e-spec",
+      "path": "e2e/macsentinel.e2e.ts",
+      "kind": "test",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-rust-test-performance",
+      "path": "src-tauri/tests/performance.rs",
+      "kind": "test",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "ART-rust-test-security",
+      "path": "src-tauri/tests/security.rs",
+      "kind": "test",
+      "sourceRef": "architecture.md#verification-boundary"
+    }
+  ],
+  "testPlans": [
+    {
+      "id": "TEST-rust-monitoring",
+      "kind": "integration",
+      "title": "Monitoring identity, normalization, availability, and gap contract",
+      "covers": [
+        "BR-1.1",
+        "BR-2.2",
+        "BR-3.1",
+        "BR-3.2",
+        "BR-7.3",
+        "C3",
+        "C4",
+        "C7",
+        "Edge-1",
+        "Edge-2",
+        "Edge-4",
+        "OBL-monitoring-owner"
+      ],
+      "file": "src-tauri/tests/monitoring.rs",
+      "sourceRef": "architecture.md#monitoring-owner"
+    },
+    {
+      "id": "TEST-rust-alerts",
+      "kind": "integration",
+      "title": "Sustained alert state and continuity contract",
+      "covers": [
+        "BR-4.1",
+        "BR-4.2",
+        "BR-4.3",
+        "BR-7.3",
+        "C3",
+        "C4",
+        "C7",
+        "C8",
+        "Edge-4",
+        "OBL-alert-owner"
+      ],
+      "file": "src-tauri/tests/alerts.rs",
+      "sourceRef": "architecture.md#alert-owner"
+    },
+    {
+      "id": "TEST-rust-storage",
+      "kind": "integration",
+      "title": "SQLite identity, retention, and degraded storage contract",
+      "covers": [
+        "BR-2.2",
+        "BR-5.2",
+        "BR-7.1",
+        "C5",
+        "C8",
+        "Edge-3",
+        "OBL-storage-owner"
+      ],
+      "file": "src-tauri/tests/storage.rs",
+      "sourceRef": "architecture.md#storage-owner"
+    },
+    {
+      "id": "TEST-rust-settings-actions",
+      "kind": "integration",
+      "title": "Settings defaults, validation, and termination identity contract",
+      "covers": [
+        "BR-4.2",
+        "BR-5.1",
+        "BR-6.1",
+        "BR-6.2",
+        "BR-7.2",
+        "C1",
+        "C3",
+        "C5",
+        "C7",
+        "Edge-5",
+        "OBL-settings-owner",
+        "OBL-termination-owner"
+      ],
+      "file": "src-tauri/tests/settings_actions.rs",
+      "sourceRef": "architecture.md#settings-owner"
+    },
+    {
+      "id": "TEST-performance-budget",
+      "kind": "integration",
+      "title": "Reference-Mac idle CPU and memory budget",
+      "covers": [
+        "C6",
+        "OBL-performance-privacy"
+      ],
+      "file": "src-tauri/tests/performance.rs",
+      "sourceRef": "architecture.md#verification-boundary"
+    },
+    {
+      "id": "TEST-security-boundary",
+      "kind": "integration",
+      "title": "Capability, identifier, and licensing boundary",
+      "covers": [
+        "C1",
+        "C2",
+        "C10",
+        "OBL-bootstrap",
+        "OBL-performance-privacy",
+        "OBL-license-docs"
+      ],
+      "file": "src-tauri/tests/security.rs",
+      "sourceRef": "architecture.md#security-boundary"
+    },
+    {
+      "id": "TEST-react-app",
+      "kind": "unit",
+      "title": "Dashboard presentation, process filtering, unavailable data, and degraded storage",
+      "covers": [
+        "BR-1.1",
+        "BR-2.1",
+        "BR-2.2",
+        "BR-3.2",
+        "BR-7.1",
+        "BR-8.1",
+        "BR-8.2",
+        "C9",
+        "OBL-bridge-contract",
+        "OBL-presentation"
+      ],
+      "file": "src/App.test.tsx",
+      "sourceRef": "architecture.md#presentation-boundary"
+    },
+    {
+      "id": "TEST-e2e-overview",
+      "kind": "e2e",
+      "title": "Integrated dashboard and menu-bar overview journeys",
+      "covers": [
+        "BR-1.1",
+        "BR-1.2",
+        "BR-8.1",
+        "BR-8.2",
+        "OBL-e2e-verification"
+      ],
+      "file": "e2e/macsentinel.e2e.ts",
+      "sourceRef": "scenario:dashboard_shows_current_evidence"
+    },
+    {
+      "id": "TEST-e2e-processes",
+      "kind": "e2e",
+      "title": "Integrated process discovery and identity journeys",
+      "covers": [
+        "BR-2.1",
+        "BR-2.2",
+        "BR-3.1",
+        "BR-3.2",
+        "OBL-e2e-verification"
+      ],
+      "file": "e2e/macsentinel.e2e.ts",
+      "sourceRef": "scenario:processes_can_be_found_and_inspected"
+    },
+    {
+      "id": "TEST-e2e-alerts",
+      "kind": "e2e",
+      "title": "Integrated CPU, suppression, and memory alert journeys",
+      "covers": [
+        "BR-4.1",
+        "BR-4.2",
+        "BR-4.3",
+        "OBL-e2e-verification"
+      ],
+      "file": "e2e/macsentinel.e2e.ts",
+      "sourceRef": "scenario:sustained_cpu_creates_evidence_alert"
+    },
+    {
+      "id": "TEST-e2e-settings",
+      "kind": "e2e",
+      "title": "Integrated settings and history deletion journey",
+      "covers": [
+        "BR-5.1",
+        "BR-5.2",
+        "OBL-e2e-verification"
+      ],
+      "file": "e2e/macsentinel.e2e.ts",
+      "sourceRef": "scenario:settings_and_deletion_change_future_behavior"
+    },
+    {
+      "id": "TEST-e2e-termination",
+      "kind": "e2e",
+      "title": "Integrated confirmed and prevented termination journeys",
+      "covers": [
+        "BR-6.1",
+        "BR-6.2",
+        "OBL-e2e-verification"
+      ],
+      "file": "e2e/macsentinel.e2e.ts",
+      "sourceRef": "scenario:confirmed_termination_reports_outcome"
+    },
+    {
+      "id": "TEST-e2e-resilience",
+      "kind": "e2e",
+      "title": "Integrated dependency-denial and sampling-gap journeys",
+      "covers": [
+        "BR-7.1",
+        "BR-7.2",
+        "BR-7.3",
+        "OBL-e2e-verification"
+      ],
+      "file": "e2e/macsentinel.e2e.ts",
+      "sourceRef": "scenario:dependency_denial_keeps_alerts_visible"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TASK-2",
+      "title": "Deliver live overview and process investigation",
+      "ownsArtifactIds": [
+        "ART-rust-model",
+        "ART-rust-monitoring",
+        "ART-rust-platform-mod",
+        "ART-rust-platform-macos",
+        "ART-rust-commands",
+        "ART-rust-test-monitoring",
+        "ART-frontend-types",
+        "ART-frontend-bridge",
+        "ART-frontend-monitoring-hook",
+        "ART-frontend-dashboard",
+        "ART-frontend-processes",
+        "ART-frontend-app",
+        "ART-frontend-test-app",
+        "ART-e2e-spec"
+      ],
+      "makesGreenIds": [
+        "dashboard_shows_current_evidence",
+        "popover_summarizes_monitoring",
+        "processes_can_be_found_and_inspected",
+        "process_identity_survives_lifecycle_changes",
+        "TEST-rust-monitoring",
+        "TEST-react-app",
+        "TEST-e2e-overview",
+        "TEST-e2e-processes"
+      ],
+      "sourceRef": "tasks.md#task-2"
+    },
+    {
+      "id": "TASK-3",
+      "title": "Deliver sustained CPU alerting",
+      "ownsArtifactIds": [
+        "ART-rust-alerts",
+        "ART-rust-commands",
+        "ART-rust-test-alerts",
+        "ART-frontend-alerts",
+        "ART-frontend-app",
+        "ART-e2e-spec"
+      ],
+      "makesGreenIds": [
+        "sustained_cpu_creates_evidence_alert"
+      ],
+      "sourceRef": "tasks.md#task-3"
+    },
+    {
+      "id": "TASK-4",
+      "title": "Deliver history and resilient degraded monitoring",
+      "ownsArtifactIds": [
+        "ART-rust-storage",
+        "ART-rust-monitoring",
+        "ART-rust-commands",
+        "ART-rust-test-storage",
+        "ART-frontend-monitoring-hook",
+        "ART-frontend-processes",
+        "ART-frontend-app",
+        "ART-e2e-spec"
+      ],
+      "makesGreenIds": [
+        "dependency_denial_keeps_alerts_visible",
+        "sampling_gap_resets_alert_continuity",
+        "TEST-rust-storage",
+        "TEST-e2e-resilience"
+      ],
+      "sourceRef": "tasks.md#task-4"
+    },
+    {
+      "id": "TASK-5",
+      "title": "Deliver settings, alert noise controls, and history deletion",
+      "ownsArtifactIds": [
+        "ART-rust-settings",
+        "ART-rust-storage",
+        "ART-rust-alerts",
+        "ART-rust-commands",
+        "ART-frontend-settings",
+        "ART-frontend-alerts",
+        "ART-frontend-app",
+        "ART-e2e-spec"
+      ],
+      "makesGreenIds": [
+        "alert_controls_prevent_noise",
+        "settings_and_deletion_change_future_behavior",
+        "TEST-e2e-settings"
+      ],
+      "sourceRef": "tasks.md#task-5"
+    },
+    {
+      "id": "TASK-6",
+      "title": "Validate and deliver memory-growth alerting",
+      "ownsArtifactIds": [
+        "ART-rust-alerts",
+        "ART-rust-test-alerts",
+        "ART-frontend-alerts",
+        "ART-e2e-spec",
+        "ART-performance-doc"
+      ],
+      "makesGreenIds": [
+        "memory_growth_reports_observation",
+        "TEST-rust-alerts",
+        "TEST-e2e-alerts"
+      ],
+      "sourceRef": "tasks.md#task-6"
+    },
+    {
+      "id": "TASK-7",
+      "title": "Deliver confirmation-gated safe termination",
+      "ownsArtifactIds": [
+        "ART-rust-termination",
+        "ART-rust-platform-macos",
+        "ART-rust-commands",
+        "ART-rust-test-settings-actions",
+        "ART-frontend-processes",
+        "ART-frontend-app",
+        "ART-e2e-spec"
+      ],
+      "makesGreenIds": [
+        "confirmed_termination_reports_outcome",
+        "unsafe_termination_is_prevented",
+        "TEST-rust-settings-actions",
+        "TEST-e2e-termination"
+      ],
+      "sourceRef": "tasks.md#task-7"
+    },
+    {
+      "id": "TASK-8",
+      "title": "Prove performance, privacy, licensing, and release documentation",
+      "ownsArtifactIds": [
+        "ART-rust-test-performance",
+        "ART-rust-test-security",
+        "ART-performance-doc",
+        "ART-metric-doc",
+        "ART-readme",
+        "ART-license",
+        "ART-tauri-config",
+        "ART-tauri-capability"
+      ],
+      "makesGreenIds": [
+        "TEST-performance-budget",
+        "TEST-security-boundary"
+      ],
+      "sourceRef": "tasks.md#task-8"
+    },
+    {
+      "id": "TASK-0",
+      "title": "Bootstrap project, runners, configuration, and documentation",
+      "ownsArtifactIds": [
+        "ART-package-json",
+        "ART-tsconfig",
+        "ART-vite-config",
+        "ART-index-html",
+        "ART-wdio-config",
+        "ART-license",
+        "ART-readme",
+        "ART-metric-doc",
+        "ART-performance-doc",
+        "ART-tauri-cargo",
+        "ART-tauri-build",
+        "ART-tauri-config",
+        "ART-tauri-capability",
+        "ART-rust-main",
+        "ART-rust-lib",
+        "ART-frontend-test-setup"
+      ],
+      "makesGreenIds": [
+        "TEST-security-boundary"
+      ],
+      "sourceRef": "tasks.md#task-0"
+    },
+    {
+      "id": "TASK-1",
+      "title": "Wire the Tauri and React walking skeleton",
+      "ownsArtifactIds": [
+        "ART-rust-main",
+        "ART-rust-lib",
+        "ART-rust-model",
+        "ART-rust-commands",
+        "ART-rust-monitoring",
+        "ART-rust-platform-mod",
+        "ART-rust-platform-macos",
+        "ART-frontend-main",
+        "ART-frontend-app",
+        "ART-frontend-types",
+        "ART-frontend-bridge",
+        "ART-frontend-monitoring-hook",
+        "ART-frontend-dashboard",
+        "ART-frontend-styles"
+      ],
+      "sourceRef": "tasks.md#task-1"
+    }
+  ]
+}

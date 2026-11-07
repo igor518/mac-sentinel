@@ -1,0 +1,37 @@
+[package]
+name = "macsentinel"
+version = "0.1.0"
+description = "Privacy-first macOS process monitor"
+authors = ["MacSentinel contributors"]
+license = "Apache-2.0"
+edition = "2024"
+rust-version = "1.90"
+
+[features]
+e2e = ["dep:tauri-plugin-wdio", "dep:tauri-plugin-wdio-webdriver"]
+
+[lib]
+name = "macsentinel_core"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[[bin]]
+name = "macsentinel"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2.7.4", features = [] }
+
+[dependencies]
+rusqlite = { version = "0.41.1", features = ["bundled"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sysinfo = "0.40.1"
+tauri = { version = "2.12.5", features = ["tray-icon"] }
+tauri-plugin-wdio = { version = "1", optional = true }
+tauri-plugin-wdio-webdriver = { version = "1", optional = true }
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
+tracing = "0.1"
+
+[dev-dependencies]
+tempfile = "3"

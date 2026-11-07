@@ -1,0 +1,13 @@
+[project]
+name = "MacSentinel"
+code = "MCS"
+path = "."
+startNumber = 1
+counterFile = ".mdt-next"
+active = true
+description = ""
+repository = ""
+ticketsPath = "docs/CRs"
+id = "macsentinel"
+
+[project.document]

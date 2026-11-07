@@ -1,0 +1,25 @@
+# >>> MDT working state (managed by mdt-cli project init) >>>
+/.mdt-next
+/.mdt/
+**/*.trace.md
+**/spec-trace*.md
+**/pipeline-state.json
+**/*.pipeline-state.json
+**/*.tasks-status.yaml
+**/.checkpoint.yaml
+**/poc/
+**/*prompt*.md
+!docs/CRs/MCS-*.md
+# <<< MDT working state <<<
+
+# Application build output
+/dist/
+/node_modules/
+/src-tauri/target/
+.DS_Store
+/.idea/
+*.log
+.env
+.env.*
+!.env.example
+/coverage/

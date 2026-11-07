@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "ticket": {
+    "key": "MCS-002"
+  },
+  "requirements": [
+    {
+      "id": "BR-1.1",
+      "kind": "behavior",
+      "text": "WHEN the user selects a process from any position in the process table, the system shall show that process detail within the current viewport without requiring a scroll to the end of the table.",
+      "sourceRef": "MCS-002 §5 Functional",
+      "routePolicy": "bdd"
+    },
+    {
+      "id": "BR-1.2",
+      "kind": "behavior",
+      "text": "WHEN process detail is open and the user activates Close, presses Escape, or activates the backdrop, the system shall dismiss the detail and return to the process explorer.",
+      "sourceRef": "MCS-002 §5 Functional",
+      "routePolicy": "bdd"
+    },
+    {
+      "id": "C1",
+      "kind": "constraint",
+      "text": "The process detail shall expose an accessible dialog name, modal semantics, visible focus, and a layout usable in narrow application windows.",
+      "sourceRef": "MCS-002 §5 Non-Functional",
+      "routePolicy": "tests"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "process_detail_opens_in_viewport",
+      "title": "Selected process detail opens in the current viewport",
+      "covers": [
+        "BR-1.1"
+      ],
+      "given": "Given a process table longer than the current viewport",
+      "when": "When the user selects a visible process row",
+      "then": "Then an accessible modal dialog immediately shows that process detail without scrolling to the table end",
+      "sourceRef": "MCS-002 §5"
+    },
+    {
+      "id": "process_detail_can_be_dismissed",
+      "title": "Process detail can be dismissed",
+      "covers": [
+        "BR-1.2"
+      ],
+      "given": "Given a process detail dialog is open",
+      "when": "When the user activates Close, presses Escape, or activates the backdrop",
+      "then": "Then the dialog closes and the process explorer remains available",
+      "sourceRef": "MCS-002 §5"
+    }
+  ],
+  "obligations": [
+    {
+      "id": "OBL-process-detail-dialog",
+      "title": "Present and dismiss selected process detail as an accessible viewport modal",
+      "derivedFrom": [
+        "BR-1.1",
+        "BR-1.2",
+        "C1"
+      ],
+      "artifactIds": [
+        "ART-process-explorer",
+        "ART-styles",
+        "ART-react-test",
+        "ART-e2e-test"
+      ],
+      "sourceRef": "MCS-002 §2"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "ART-process-explorer",
+      "path": "src/components/ProcessExplorer.tsx",
+      "kind": "runtime",
+      "sourceRef": "MCS-002 §4"
+    },
+    {
+      "id": "ART-styles",
+      "path": "src/styles.css",
+      "kind": "runtime",
+      "sourceRef": "MCS-002 §4"
+    },
+    {
+      "id": "ART-react-test",
+      "path": "src/App.test.tsx",
+      "kind": "test",
+      "sourceRef": "MCS-002 §4"
+    },
+    {
+      "id": "ART-e2e-test",
+      "path": "e2e/macsentinel.e2e.ts",
+      "kind": "test",
+      "sourceRef": "MCS-002 §4"
+    }
+  ],
+  "testPlans": [
+    {
+      "id": "TEST-process-detail-dialog",
+      "kind": "integration",
+      "title": "Process detail modal visibility and dismissal",
+      "covers": [
+        "BR-1.1",
+        "BR-1.2",
+        "C1"
+      ],
+      "file": "src/App.test.tsx",
+      "sourceRef": "MCS-002 §5 Testing"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TASK-1",
+      "title": "Move process detail into accessible viewport dialog",
+      "ownsArtifactIds": [
+        "ART-process-explorer",
+        "ART-styles",
+        "ART-react-test",
+        "ART-e2e-test"
+      ],
+      "makesGreenIds": [
+        "process_detail_opens_in_viewport",
+        "process_detail_can_be_dismissed",
+        "TEST-process-detail-dialog"
+      ],
+      "sourceRef": "tasks.md#task-1"
+    }
+  ]
+}

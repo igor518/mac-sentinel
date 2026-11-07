@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="MacSentinel">
+	<defs>
+		<linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#111816" />
+			<stop offset="1" stop-color="#030504" />
+		</linearGradient>
+	</defs>
+	<rect width="1024" height="1024" rx="224" fill="url(#background)" />
+	<rect x="190" y="244" width="644" height="494" rx="112" fill="none" stroke="#12d777" stroke-width="52" />
+	<path d="M258 558h116l82-146 116 222 76-132h118" fill="none" stroke="#12d777" stroke-width="52" stroke-linecap="round" stroke-linejoin="round" />
+</svg>
