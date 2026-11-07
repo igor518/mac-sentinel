@@ -6,7 +6,7 @@ startNumber = 1
 counterFile = ".mdt-next"
 active = true
 description = ""
-repository = ""
+repository = "https://github.com/igor518/mac-sentinel"
 ticketsPath = "docs/CRs"
 id = "macsentinel"
 
