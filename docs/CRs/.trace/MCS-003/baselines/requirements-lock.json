@@ -1,0 +1,22 @@
+{
+  "ticket": "MCS-003",
+  "generatedAt": "2026-11-08T00:03:14.494Z",
+  "requirements": [
+    {
+      "id": "BR-1.1",
+      "routePolicy": "bdd"
+    },
+    {
+      "id": "BR-1.2",
+      "routePolicy": "bdd"
+    },
+    {
+      "id": "C1",
+      "routePolicy": "tests"
+    },
+    {
+      "id": "C2",
+      "routePolicy": "tests"
+    }
+  ]
+}

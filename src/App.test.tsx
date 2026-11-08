@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import App from './App';
 import type { MacSentinelBridge, MonitoringSnapshot } from './types';
@@ -159,5 +159,50 @@ describe('MacSentinel application shell', () => {
 		expect(within(alertCenter).getByTestId('alert-evidence')).toHaveTextContent('Google Chrome');
 		expect(within(alertCenter).getByTestId('alert-evidence')).toHaveTextContent('80% threshold');
 		expect(within(alertCenter).getByTestId('alert-evidence')).toHaveTextContent('10 minute duration');
+	});
+
+	it('keeps process scrolling separate and renders bounded metric trends', async () => {
+		let publish: ((next: MonitoringSnapshot) => void) | undefined;
+		const testBridge = bridge({
+			subscribe: vi.fn((listener) => {
+				publish = listener;
+				return () => undefined;
+			}),
+		});
+		render(<App bridge={testBridge} />);
+
+		expect(await screen.findByTestId('process-scroll-region')).toBeInTheDocument();
+		expect(screen.getByRole('img', { name: /CPU trend/i })).toHaveAttribute('data-point-count', '1');
+		expect(screen.getByRole('img', { name: /Memory trend/i })).toHaveAttribute('data-point-count', '1');
+
+		act(() => publish?.({
+			...snapshot,
+			recordedAtMs: snapshot.recordedAtMs + 2_000,
+			systemCpuPercent: 35,
+			usedMemoryBytes: 15_000_000_000,
+		}));
+
+		expect(screen.getByRole('img', { name: /CPU trend/i })).toHaveAttribute('data-point-count', '2');
+		expect(screen.getByRole('img', { name: /Memory trend/i })).toHaveAttribute('data-point-count', '2');
+
+		for (let index = 2; index < 65; index += 1) {
+			act(() => publish?.({
+				...snapshot,
+				recordedAtMs: snapshot.recordedAtMs + index * 2_000,
+				systemCpuPercent: 20 + index,
+				usedMemoryBytes: 14_000_000_000 + index * 10_000_000,
+			}));
+		}
+		expect(screen.getByRole('img', { name: /CPU trend/i })).toHaveAttribute('data-point-count', '60');
+		expect(screen.getByRole('img', { name: /Memory trend/i })).toHaveAttribute('data-point-count', '60');
+
+		act(() => publish?.({
+			...snapshot,
+			recordedAtMs: snapshot.recordedAtMs + 65 * 2_000,
+			systemCpuPercent: null,
+			usedMemoryBytes: null,
+		}));
+		expect(screen.getByRole('img', { name: /CPU trend/i })).toHaveAttribute('data-point-count', '59');
+		expect(screen.getByRole('img', { name: /Memory trend/i })).toHaveAttribute('data-point-count', '59');
 	});
 });

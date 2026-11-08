@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { MacSentinelBridge, MonitoringSnapshot } from '../types';
 import AlertCenter from './AlertCenter';
 import ProcessExplorer from './ProcessExplorer';
+import TrendChart from './TrendChart';
 
 interface DashboardProps {
 	snapshot: MonitoringSnapshot;
@@ -20,9 +21,40 @@ function formatMemory(bytes: number | null): string {
 	return bytes === null ? 'Unavailable' : `${(bytes / 1_000_000_000).toFixed(1)} GB`;
 }
 
+interface MetricHistoryPoint {
+	recordedAtMs: number;
+	cpuPercent: number | null;
+	usedMemoryBytes: number | null;
+}
+
+const MAX_TREND_SAMPLES = 60;
+
 export default function Dashboard({ snapshot, loadHistory }: DashboardProps) {
 	const [summaryOpen, setSummaryOpen] = useState(false);
+	const [metricHistory, setMetricHistory] = useState<MetricHistoryPoint[]>([]);
 	const topProcesses = snapshot.processes.slice(0, 3);
+
+	useEffect(() => {
+		setMetricHistory((history) => {
+			const latest = history.at(-1);
+			if (latest && snapshot.recordedAtMs <= latest.recordedAtMs) {
+				return history;
+			}
+
+			return [...history, {
+				recordedAtMs: snapshot.recordedAtMs,
+				cpuPercent: snapshot.systemCpuPercent,
+				usedMemoryBytes: snapshot.usedMemoryBytes,
+			}].slice(-MAX_TREND_SAMPLES);
+		});
+	}, [snapshot.recordedAtMs, snapshot.systemCpuPercent, snapshot.usedMemoryBytes]);
+
+	const cpuTrend = metricHistory.flatMap((point) => (
+		point.cpuPercent === null ? [] : [point.cpuPercent]
+	));
+	const memoryTrend = metricHistory.flatMap((point) => (
+		point.usedMemoryBytes === null ? [] : [point.usedMemoryBytes]
+	));
 
 	return (
 		<main className="dashboard" data-testid="system-overview">
@@ -85,16 +117,36 @@ export default function Dashboard({ snapshot, loadHistory }: DashboardProps) {
 
 			<section className="metrics" aria-label="Current system metrics">
 				<article className="metric-card">
-					<span>CPU</span>
-					<strong>{formatCpu(snapshot.systemCpuPercent)}</strong>
+					<div className="metric-card__value">
+						<span>CPU</span>
+						<strong>{formatCpu(snapshot.systemCpuPercent)}</strong>
+					</div>
+					<TrendChart
+						label="CPU"
+						values={cpuTrend}
+						color="#43c894"
+						maximum={100}
+						formatValue={(value) => `${Math.round(value)}%`}
+					/>
 				</article>
 				<article className="metric-card">
-					<span>Memory</span>
-					<strong>{formatMemory(snapshot.usedMemoryBytes)}</strong>
+					<div className="metric-card__value">
+						<span>Memory</span>
+						<strong>{formatMemory(snapshot.usedMemoryBytes)}</strong>
+					</div>
+					<TrendChart
+						label="Memory"
+						values={memoryTrend}
+						color="#60a5fa"
+						formatValue={(value) => formatMemory(value)}
+					/>
 				</article>
 				<article className="metric-card">
-					<span>Processes</span>
-					<strong data-testid="process-count">{metric(snapshot.processCount)}</strong>
+					<div className="metric-card__value">
+						<span>Processes</span>
+						<strong data-testid="process-count">{metric(snapshot.processCount)}</strong>
+					</div>
+					<p className="metric-card__context">Live processes in the latest completed sample</p>
 				</article>
 			</section>
 
