@@ -2,6 +2,8 @@
 
 MacSentinel is a privacy-first macOS process monitor. It is designed to explain current CPU and memory pressure, preserve useful local evidence, and surface sustained resource anomalies without sending monitoring data off the Mac.
 
+![MacSentinel dashboard showing CPU and memory trends, alerts, and the live process list](docs/images/macsentinel-dashboard.png)
+
 The project is currently being built incrementally from the specifications in `docs/CRs/MCS-001`. The bootstrap is intentionally behavior-free; live monitoring is introduced only after the native and frontend boundaries compile and their tests are in place.
 
 ## Supported environment
