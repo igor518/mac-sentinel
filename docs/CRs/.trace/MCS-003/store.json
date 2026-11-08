@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "ticket": {
+    "key": "MCS-003"
+  },
+  "requirements": [
+    {
+      "id": "BR-1.1",
+      "kind": "behavior",
+      "text": "WHEN the process list exceeds the available window height, the system shall keep the current overview metrics visible and confine vertical scrolling to the process table.",
+      "sourceRef": "MCS-003 §5 Functional",
+      "routePolicy": "bdd"
+    },
+    {
+      "id": "BR-1.2",
+      "kind": "behavior",
+      "text": "WHEN live snapshots arrive, the system shall show accessible CPU and memory trends from at most the latest 60 available samples without fabricating missing values.",
+      "sourceRef": "MCS-003 §5 Functional",
+      "routePolicy": "bdd"
+    },
+    {
+      "id": "C1",
+      "kind": "constraint",
+      "text": "The frontend trend buffer shall contain no more than 60 samples and shall not alter Rust sampling, persistence, or alert evaluation.",
+      "sourceRef": "MCS-003 §5 Non-Functional",
+      "routePolicy": "tests"
+    },
+    {
+      "id": "C2",
+      "kind": "constraint",
+      "text": "Trend visualizations shall expose non-color accessible names and range descriptions.",
+      "sourceRef": "MCS-003 §5 Non-Functional",
+      "routePolicy": "tests"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "overview_remains_visible_while_processes_scroll",
+      "title": "Overview remains visible while processes scroll",
+      "covers": [
+        "BR-1.1"
+      ],
+      "given": "Given the live process table contains more rows than fit in the native window",
+      "when": "When the user scrolls the process list",
+      "then": "Then only the process table scrolls while system statistics and process controls remain visible",
+      "sourceRef": "MCS-003 BR-1.1"
+    },
+    {
+      "id": "metric_trends_show_recent_samples",
+      "title": "Metric trends show recent live samples",
+      "covers": [
+        "BR-1.2"
+      ],
+      "given": "Given multiple CPU and memory snapshots have arrived",
+      "when": "When the user views the system metric cards",
+      "then": "Then accessible CPU and memory trends show up to the latest 60 available samples",
+      "sourceRef": "MCS-003 BR-1.2"
+    }
+  ],
+  "obligations": [
+    {
+      "id": "OBL-trends",
+      "title": "Render bounded accessible live metric trends",
+      "derivedFrom": [
+        "BR-1.2",
+        "C1",
+        "C2"
+      ],
+      "artifactIds": [
+        "ART-dashboard",
+        "ART-trend-chart",
+        "ART-app-test"
+      ],
+      "sourceRef": "MCS-003 §2 Decision"
+    },
+    {
+      "id": "OBL-layout",
+      "title": "Confine dashboard scrolling to the process table",
+      "derivedFrom": [
+        "BR-1.1"
+      ],
+      "artifactIds": [
+        "ART-dashboard",
+        "ART-processes",
+        "ART-styles",
+        "ART-e2e-ux"
+      ],
+      "sourceRef": "MCS-003 §2 Decision"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "ART-dashboard",
+      "path": "src/components/Dashboard.tsx",
+      "kind": "runtime",
+      "sourceRef": "MCS-003 §4 Modified Artifacts"
+    },
+    {
+      "id": "ART-processes",
+      "path": "src/components/ProcessExplorer.tsx",
+      "kind": "runtime",
+      "sourceRef": "MCS-003 §4 Modified Artifacts"
+    },
+    {
+      "id": "ART-trend-chart",
+      "path": "src/components/TrendChart.tsx",
+      "kind": "runtime",
+      "sourceRef": "MCS-003 §4 New Artifacts"
+    },
+    {
+      "id": "ART-styles",
+      "path": "src/styles.css",
+      "kind": "runtime",
+      "sourceRef": "MCS-003 §4 Modified Artifacts"
+    },
+    {
+      "id": "ART-app-test",
+      "path": "src/App.test.tsx",
+      "kind": "test",
+      "sourceRef": "MCS-003 §4 Modified Artifacts"
+    },
+    {
+      "id": "ART-e2e-ux",
+      "path": "e2e/mcs003.e2e.ts",
+      "kind": "test",
+      "sourceRef": "MCS-003 §5 Testing"
+    }
+  ],
+  "testPlans": [
+    {
+      "id": "TEST-react-ux",
+      "kind": "integration",
+      "title": "Fixed overview and metric trend regression coverage",
+      "covers": [
+        "BR-1.1",
+        "BR-1.2",
+        "C1",
+        "C2"
+      ],
+      "file": "src/App.test.tsx",
+      "sourceRef": "MCS-003 §5 Testing"
+    },
+    {
+      "id": "TEST-e2e-ux",
+      "kind": "e2e",
+      "title": "Native fixed overview and scroll ownership journey",
+      "covers": [
+        "BR-1.1",
+        "BR-1.2"
+      ],
+      "file": "e2e/mcs003.e2e.ts",
+      "sourceRef": "MCS-003 §5 Testing"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "TASK-1",
+      "title": "Bound process scrolling and add metric trends",
+      "ownsArtifactIds": [
+        "ART-dashboard",
+        "ART-processes",
+        "ART-trend-chart",
+        "ART-styles",
+        "ART-app-test",
+        "ART-e2e-ux"
+      ],
+      "makesGreenIds": [
+        "overview_remains_visible_while_processes_scroll",
+        "metric_trends_show_recent_samples",
+        "TEST-react-ux",
+        "TEST-e2e-ux"
+      ],
+      "sourceRef": "tasks.md#task-1"
+    }
+  ]
+}
