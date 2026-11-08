@@ -148,7 +148,13 @@ export default function ProcessExplorer({ processes, loadHistory }: ProcessExplo
 				</div>
 			</div>
 
-			<div className="table-wrap">
+			<div
+				className="table-wrap"
+				data-testid="process-scroll-region"
+				role="region"
+				aria-label="Scrollable process list"
+				tabIndex={0}
+			>
 				<table aria-label="Processes" data-testid="process-table">
 					<thead>
 						<tr>
